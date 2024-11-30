@@ -1,7 +1,7 @@
 --[[
 	Damage Based Skill Progression:
 	MWSE LUA Edition
-	v1.0.0
+	v1.1.0
 	by Pimgd
 ]]--
 local defaultConfig = {
@@ -33,11 +33,11 @@ affectedSkills[tes3.skill.spear] = true
 affectedSkills[tes3.skill.shortBlade] = true
 affectedSkills[tes3.skill.marksman] = true
 
-local allowedToGainExp = false --used to prevent gaining default on-hit experience, likely to be a source of conflicts
+local blockNextExpGain = false --used to prevent gaining default on-hit experience, likely to be a source of conflicts
 local previousHealth = 0 --used to calculate overkill
 
 local function logger(message)
-	if (config.logging) then tes3ui.logToConsole(message) end
+	if (config.logging) then tes3ui.logToConsole("DBSP: " .. message) end
 end
 
 local function getExpAwardedFor(damage, overkillDamage, skill)
@@ -95,10 +95,9 @@ local function onDamageDealt(e)
 	local nonOverkillDamageDealt = e.damage - overkillDamageDealt
 
 	if (e.projectile ~= nil) then
-		allowedToGainExp = true
 		logger("Handing out exp due to projectile damage")
 		tes3.mobilePlayer:exerciseSkill(tes3.skill.marksman, getExpAwardedFor(nonOverkillDamageDealt, overkillDamageDealt, tes3.skill.marksman))
-		allowedToGainExp = false
+		blockNextExpGain = true
 		return
 	end
 	
@@ -108,18 +107,18 @@ local function onDamageDealt(e)
 	
 	local usedSkillId = e.attacker.readiedWeapon.object.skillId
 	if (affectedSkills[usedSkillId]) then
-		allowedToGainExp = true
 		logger("Handing out exp due to weapon damage")
 		tes3.mobilePlayer:exerciseSkill(usedSkillId, getExpAwardedFor(nonOverkillDamageDealt, overkillDamageDealt, usedSkillId))
-		allowedToGainExp = false
+		blockNextExpGain = true
 	end
 end
 
 local function onSkillExpGain(e)
 	if (not config.enableDBSP) then return end
 	if (affectedSkills[e.skill]) then
-		if (not allowedToGainExp) then
+		if (blockNextExpGain) then
 			logger("Blocked " .. tes3.skillName[e.skill] .. " from gaining " .. e.progress .. " xp.")
+			blockNextExpGain = false
 			return false
 		end
 		logger("Allowed " .. tes3.skillName[e.skill] .. " to gain " .. e.progress .. " xp.")
