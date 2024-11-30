@@ -1,9 +1,10 @@
 --[[
 	Damage Based Skill Progression:
 	MWSE LUA Edition
-	v1.1.0
+	v1.1.1
 	by Pimgd
 ]]--
+local version = "v1.1.1"
 local defaultConfig = {
 	enableDBSP = true,
 	enableSettingsPerSkill = false,
@@ -136,7 +137,7 @@ local function registerMCM()
 
 	local page = template:createSideBarPage()
 	page.label = "General Settings"
-	page.description = "Damage Based Skill Progression: MWSE-Lua Edition, v1.0.0, by Pimgd"
+	page.description = "Damage Based Skill Progression: MWSE-Lua Edition, "..version..", by Pimgd"
 
 	local category = page:createCategory("General Settings")
 
